@@ -1,0 +1,32 @@
+[
+  {
+    "round": 1,
+    "pair": "Wata -> Kakalika",
+    "Y": "handover (new)",
+    "X": "old (4: energies too different)"
+  },
+  {
+    "round": 2,
+    "pair": "worst behaviour -> In A Loop",
+    "X": "handover (new)",
+    "Y": "old (5: second instrumental too prominent at 0:41)"
+  },
+  {
+    "round": 3,
+    "pair": "FInally -> In A Loop",
+    "Y": "handover (new)",
+    "X": "old (6: melodies clashed at 0:43)"
+  },
+  {
+    "round": 4,
+    "pair": "PRESIDENTIAL -> Pure Love Mi Give Gal",
+    "X": "handover (new)",
+    "Y": "old (6: instrumentals clashed at 0:43)"
+  },
+  {
+    "round": 5,
+    "pair": "Royal Jama -> Wata",
+    "Y": "handover (new)",
+    "X": "old (4: too much going on at 0:40)"
+  }
+]

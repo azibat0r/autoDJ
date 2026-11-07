@@ -1,0 +1,6 @@
+spotipy
+yt-dlp
+librosa
+numpy
+pymongo
+python-dotenv

@@ -1,0 +1,15 @@
+node_modules
+.env
+python/downloads/
+python/.spotify_cache
+__pycache__/
+python/renders/
+python/stems/
+
+# Demo page API key
+demo/config.js
+demo/mixes/*.mp3
+
+# Spotify token cache and regenerable analysis data
+python/.cache
+python/data/library_set.json

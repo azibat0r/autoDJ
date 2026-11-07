@@ -1,0 +1,72 @@
+[
+  {
+    "round": 1,
+    "start": "Wata",
+    "Y": {
+      "song": "Kakalika",
+      "role": "engine pick",
+      "technique": "layered, 16 bars"
+    },
+    "X": {
+      "song": "Ear Candy",
+      "role": "alternative (61, okay)",
+      "technique": "layered_short, 8 bars"
+    }
+  },
+  {
+    "round": 2,
+    "start": "worst behaviour",
+    "X": {
+      "song": "In A Loop",
+      "role": "engine pick",
+      "technique": "layered, 16 bars"
+    },
+    "Y": {
+      "song": "FInally",
+      "role": "alternative (57, POOR MATCH)",
+      "technique": "layered_short, 8 bars"
+    }
+  },
+  {
+    "round": 3,
+    "start": "FInally",
+    "X": {
+      "song": "Can't Be Stopped",
+      "role": "engine pick",
+      "technique": "layered, 16 bars"
+    },
+    "Y": {
+      "song": "In A Loop",
+      "role": "alternative (60, POOR MATCH)",
+      "technique": "layered_short, 8 bars"
+    }
+  },
+  {
+    "round": 4,
+    "start": "PRESIDENTIAL",
+    "Y": {
+      "song": "Feels",
+      "role": "engine pick",
+      "technique": "layered_short, 8 bars"
+    },
+    "X": {
+      "song": "Pure Love Mi Give Gal",
+      "role": "alternative (65, okay)",
+      "technique": "layered_short, 8 bars"
+    }
+  },
+  {
+    "round": 5,
+    "start": "Royal Jama",
+    "X": {
+      "song": "Wata",
+      "role": "engine pick",
+      "technique": "layered_short, 8 bars"
+    },
+    "Y": {
+      "song": "E No Easy",
+      "role": "alternative (63, okay)",
+      "technique": "layered_short, 8 bars"
+    }
+  }
+]
