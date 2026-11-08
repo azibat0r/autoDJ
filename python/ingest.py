@@ -1,8 +1,14 @@
+"""Download liked Spotify songs that aren't in the library yet; analyze.py and stems_scan.py do the analysis.
+
+    python ingest.py --minutes 30
+Most recently liked first. Resumable: songs already in the database are skipped, as are other versions of them.
+"""
+
+import argparse
 import os
 import re
+import time
 
-import librosa
-import numpy as np
 import spotipy
 import yt_dlp
 from dotenv import load_dotenv
@@ -16,6 +22,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 SEARCH_RESULTS = 5
 DURATION_TOLERANCE = 15  # seconds a YouTube result may differ from the Spotify track length
+MIN_SECONDS, MAX_SECONDS = 90, 480  # skips interludes and hour-long sets
 
 
 def get_spotify():
@@ -82,6 +89,7 @@ def download_mp3(url, name):
         "outtmpl": os.path.join(DOWNLOAD_DIR, f"{name}.%(ext)s"),
         "quiet": True,
         "no_warnings": True,
+        "noprogress": True,
         "noplaylist": True,
         "postprocessors": [
             {
@@ -96,62 +104,58 @@ def download_mp3(url, name):
     return os.path.join(DOWNLOAD_DIR, f"{name}.mp3")
 
 
-def analyze(file_path):
-    y, sr = librosa.load(file_path, sr=None, mono=True)
-
-    tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
-    bpm = float(np.atleast_1d(tempo)[0])
-
-    # Pitch class with the strongest average chroma energy (0 = C, 11 = B)
-    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
-    key = int(np.argmax(chroma.mean(axis=1)))
-
-    energy = float(librosa.feature.rms(y=y).mean())
-
-    return {"bpm": round(bpm, 2), "key": key, "energy": energy}
+def plain(text):
+    """Text without version notes or punctuation, so "Song (Remix)" and "Song - Live" count as "Song"."""
+    return re.sub(r"[^a-z0-9]", "", re.sub(r"\(.*?\)|\[.*?\]| - .*$", "", text.lower()))
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--minutes", type=float, help="stop starting new downloads after this long")
+    args = parser.parse_args()
+
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
     songs_collection = MongoClient(os.environ["MONGO_URL"]).get_default_database("autodj")["songs"]
+    have = list(songs_collection.find({}, {"title": 1, "artist": 1}))
+    titles = {s["title"] for s in have}  # the mix code looks songs up by title, so titles must stay unique
+    versions = {(plain(s["title"]), plain(s["artist"].split(",")[0])) for s in have}
 
     print("Fetching liked songs from Spotify...")
     songs = fetch_liked_songs(get_spotify())
-    print(f"Found {len(songs)} liked songs\n")
+    print(f"Found {len(songs)} liked songs")
 
+    started, saved, failed = time.time(), 0, 0
     for i, song in enumerate(songs, start=1):
         title, artist = song["title"], song["artist"]
         prefix = f"[{i}/{len(songs)}] {title} - {artist}"
+        version = (plain(title), plain(artist.split(",")[0]))
 
-        if songs_collection.find_one({"title": title, "artist": artist}):
-            print(f"{prefix}: already in database, skipping")
+        if title in titles or version in versions or not MIN_SECONDS <= song["duration"] <= MAX_SECONDS:
             continue
+        if args.minutes and time.time() - started > args.minutes * 60:
+            print(f"time budget of {args.minutes:.0f} min used")
+            break
 
         try:
             print(f"{prefix}: searching YouTube...")
             url = find_youtube_url(title, artist, song["duration"])
             if not url:
                 print(f"{prefix}: no YouTube result with a matching length, skipping")
+                failed += 1
                 continue
 
-            print(f"{prefix}: downloading {url}")
             file_path = download_mp3(url, safe_filename(f"{artist} - {title}"))
-
-            print(f"{prefix}: analyzing...")
-            features = analyze(file_path)
-
-            songs_collection.insert_one(
-                {"title": title, "artist": artist, **features, "filePath": file_path}
-            )
-            print(
-                f"{prefix}: saved (bpm={features['bpm']}, key={features['key']}, "
-                f"energy={features['energy']:.4f})"
-            )
+            songs_collection.insert_one({"title": title, "artist": artist, "filePath": file_path})
+            titles.add(title)
+            versions.add(version)
+            saved += 1
+            print(f"{prefix}: saved ({time.time() - started:.0f}s in)")
         except Exception as err:
+            failed += 1
             print(f"{prefix}: failed - {err}")
 
-    print("\nDone.")
+    print(f"Done. {saved} songs saved, {failed} not found or failed.")
 
 
 if __name__ == "__main__":
