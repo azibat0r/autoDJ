@@ -108,6 +108,7 @@ def main():
                 loading.append(loader.submit(load, todo[i + AHEAD]))
             try:
                 stems, audio = loading[i].result()
+                loading[i] = None  # drop the finished future, or every song's audio stays in memory
                 fresh = stems is None
                 if fresh:
                     stems = separate(model, audio)

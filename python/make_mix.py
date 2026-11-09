@@ -468,12 +468,12 @@ def main():
     find = lambda name: next(t for t in ready if t.lower().startswith(name.lower()))
     excluded = {find(e) for e in args.exclude}
     titles = [t for t in titles if t not in excluded]
+    if args.pool:  # narrows the songs; a theme then picks within them
+        titles = [t for t in titles if any(t.lower().startswith(p.lower()) for p in args.pool)]
     if (args.genre or args.energy or args.bpm) and not args.chain:
         titles, bpm = theme_pool(lib, titles, args.genre, args.energy, args.bpm, rank_among=ready)
         print(f"theme pool: {len(titles)} songs around {bpm:.1f} BPM: {', '.join(titles)}")
 
-    if args.pool:
-        titles = [find(p) for p in args.pool]
     fixed = [find(c) for c in args.chain] if args.chain else None
     avoid = {find(a) for a in args.avoid}
     chain, plan = plan_mix(lib, titles, len(fixed) if fixed else args.songs, fixed, avoid, args.max_avoided,
